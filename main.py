@@ -54,7 +54,8 @@ def sell_tab(driver, sell_url):
         wait.until(EC.presence_of_element_located((By.XPATH, available_coin_xpath)))
         available_coin = driver.find_element_by_xpath(available_coin_xpath)
 
-        if float(re.search(r'[0-9]+[.]*[0-9]*', available_coin.get_attribute("innerHTML")).group(0)) > 0.0:
+        inner_html = available_coin.get_attribute("innerHTML").strip()
+        if '1e-9' != inner_html[0:4] and float(re.search(r'[0-9]+[.]*[0-9]*', inner_html).group(0)) > 0.0:
             max_button_xpath = '/html/body/app-root/div/trade-creator-page/app-page/div/div/div[1]/div/trade-creator/div/div/div/trade-creator-form/div[3]/div[1]/span[2]/a'
             wait.until(EC.element_to_be_clickable((By.XPATH, max_button_xpath)))
             max_button = driver.find_element_by_xpath(max_button_xpath)
