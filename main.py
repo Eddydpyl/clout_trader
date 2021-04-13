@@ -29,6 +29,9 @@ def bitclout_login(driver, secret):
     wait = WebDriverWait(driver, 20)
     driver.get(BITCLOUT_LOGIN_URL)
 
+    creators_xpath = '/html/body/app-root/div/log-in-or-sign-up-page/div[1]/div/right-bar-creators/div/right-bar-creators-leaderboard/a[1]'
+    wait.until(EC.presence_of_element_located((By.XPATH, creators_xpath)))
+
     secret_text_xpath = '/html/body/app-root/div/log-in-or-sign-up-page/div[1]/div/div/div/log-in-or-sign-up/load-account/div/div[4]/textarea'
     wait.until(EC.presence_of_element_located((By.XPATH, secret_text_xpath)))
     textarea = driver.find_element_by_xpath(secret_text_xpath)
@@ -47,18 +50,19 @@ def sell_tab(driver, sell_url):
         driver.execute_script('window.open("' + sell_url + '", "_blank");')
         driver.switch_to.window(driver.window_handles[-1])
 
-        max_button_xpath = '/html/body/app-root/div/trade-creator-page/app-page/div/div/div[1]/div/trade-creator/div/div/div/trade-creator-form/div[3]/div[1]/span[2]/a'
-        wait.until(EC.element_to_be_clickable((By.XPATH, max_button_xpath)))
-        max_button = driver.find_element_by_xpath(max_button_xpath)
-        max_button.click()
+        available_coin_xpath = '/html/body/app-root/div/trade-creator-page/app-page/div/div/div[1]/div/trade-creator/div/div/div/trade-creator-form/div[2]/div/div'
+        wait.until(EC.presence_of_element_located((By.XPATH, available_coin_xpath)))
+        available_coin = driver.find_element_by_xpath(available_coin_xpath)
 
-        you_receive_xpath = '/html/body/app-root/div/trade-creator-page/app-page/div/div/div[1]/div/trade-creator/div/div/div/trade-creator-form/div[3]/div[3]/trade-creator-table/div[2]/div/span'
-        wait.until(EC.visibility_of_element_located((By.XPATH, you_receive_xpath)))
-        you_receive = driver.find_element_by_xpath(you_receive_xpath)
+        if float(re.search(r'[0-9]+[.]*[0-9]*', available_coin.get_attribute("innerHTML")).group(0)) > 0.0:
+            max_button_xpath = '/html/body/app-root/div/trade-creator-page/app-page/div/div/div[1]/div/trade-creator/div/div/div/trade-creator-form/div[3]/div[1]/span[2]/a'
+            wait.until(EC.element_to_be_clickable((By.XPATH, max_button_xpath)))
+            max_button = driver.find_element_by_xpath(max_button_xpath)
+            max_button.click()
 
-        print(float(re.sub(r'[^0-9.]', '', you_receive.get_attribute("innerHTML"))))
+            price_per_coin_xpath = '/html/body/app-root/div/trade-creator-page/app-page/div/div/div[1]/div/trade-creator/div/div/div/trade-creator-form/div[3]/div[3]/trade-creator-table/div[3]/div/span'
+            wait.until(EC.presence_of_element_located((By.XPATH, price_per_coin_xpath)))
 
-        if float(re.sub(r'[^0-9.]', '', you_receive.get_attribute("innerHTML"))) > 0.0:
             review_button_xpath = '/html/body/app-root/div/trade-creator-page/app-page/div/div/div[1]/div/trade-creator/div/div/div/trade-creator-form/div[3]/div[4]/a'
             wait.until(EC.element_to_be_clickable((By.XPATH, review_button_xpath)))
             review_button = driver.find_element_by_xpath(review_button_xpath)
@@ -113,6 +117,9 @@ def bitclout_sell(driver, min_price, max_price, min_wallet, max_amount, excluded
         sell_url = creator.find_element_by_xpath('.//div/div[3]/a[2]').get_attribute("href")
         sell_tab(driver, sell_url)
 
+        wallet_amount = wallet_amount - owned_value
+        amount_sold = amount_sold + owned_value
+
 
 def run_bot(window):
     event, values = window.read(close=False)
@@ -158,7 +165,7 @@ def run_bot(window):
 if __name__ == '__main__':
     sg.theme('Light Blue 2')
     layout = [[sg.Text('')],
-              [sg.Text('Login Secret', size=(20, 1)), sg.Input(size=(100, 1), default_text='reward spell surge unknown junk flame catch train since husband shallow pyramid')],
+              [sg.Text('Login Secret', size=(20, 1)), sg.Input(size=(100, 1))],
               [sg.Text('Minimum Coin Price', size=(20, 1)), sg.Input(size=(100, 1))],
               [sg.Text('Maximum Coin Price', size=(20, 1)), sg.Input(size=(100, 1))],
               [sg.Text('Minimum Wallet Amount', size=(20, 1)), sg.Input(size=(100, 1))],
