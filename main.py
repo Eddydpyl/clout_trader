@@ -1,5 +1,4 @@
 import sys
-import time
 import re
 
 import PySimpleGUI as sg
@@ -12,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import undetected_chromedriver as uc
 
 
-BITCLOUT_LOGIN_URL = 'https://bitclout.com/log-in'
+BITCLOUT_LOGIN_URL = 'https://bitclout.com/'
 BITCLOUT_WALLET_URL = 'https://bitclout.com/wallet'
 
 
@@ -29,19 +28,27 @@ def bitclout_login(driver, secret):
     wait = WebDriverWait(driver, 20)
     driver.get(BITCLOUT_LOGIN_URL)
 
-    creators_xpath = '/html/body/app-root/div/log-in-or-sign-up-page/div[1]/div/right-bar-creators/div/right-bar-creators-leaderboard/a[1]'
-    wait.until(EC.presence_of_element_located((By.XPATH, creators_xpath)))
+    login_xpath = '/html/body/app-root/div/app-landing-page/div[3]/div[1]/div/div/a[2]'
+    wait.until(EC.element_to_be_clickable((By.XPATH, login_xpath)))
+    button = driver.find_element_by_xpath(login_xpath)
+    button.click()
 
-    secret_text_xpath = '/html/body/app-root/div/log-in-or-sign-up-page/div[1]/div/div/div/log-in-or-sign-up/load-account/div/div[4]/textarea'
+    while len(driver.window_handles) == 1: continue
+    driver.switch_to.window(driver.window_handles[1])
+
+    secret_text_xpath = '/html/body/app-root/app-log-in/div/div[3]/textarea'
     wait.until(EC.presence_of_element_located((By.XPATH, secret_text_xpath)))
     textarea = driver.find_element_by_xpath(secret_text_xpath)
     textarea.send_keys(secret)
 
-    login_btn_xpath = '/html/body/app-root/div/log-in-or-sign-up-page/div[1]/div/div/div/log-in-or-sign-up/load-account/div/div[5]/button'
-    wait.until(EC.presence_of_element_located((By.XPATH, login_btn_xpath)))
+    login_btn_xpath = '/html/body/app-root/app-log-in/div/div[4]/button'
+    wait.until(EC.element_to_be_clickable((By.XPATH, login_btn_xpath)))
     button = driver.find_element_by_xpath(login_btn_xpath)
     button.click()
-    time.sleep(3)
+
+    driver.switch_to.window(driver.window_handles[0])
+    creators_xpath = '/html/body/app-root/div/log-in-or-sign-up-page/div[1]/div/right-bar-creators/div/right-bar-creators-leaderboard/a[1]'
+    wait.until(EC.presence_of_element_located((By.XPATH, creators_xpath)))
 
 
 def sell_tab(driver, sell_url):
